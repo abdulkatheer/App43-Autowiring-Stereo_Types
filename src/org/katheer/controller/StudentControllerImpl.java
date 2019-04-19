@@ -29,16 +29,16 @@ public class StudentControllerImpl implements StudentController {
                 "DETAILS**********************************************");
         System.out.println(String.format("%-5s%-32s%-12s%-5s%-42s%-12s", "ID", "Student Name",
                 "Dept", "CGPA", "Email", "Mobile"));
-        for (Student s : students) {
-            if (s.getId() == 0) {
-                System.out.println("                                         " +
-                        " *****NO DATA FOUND*****                             " +
-                        "             ");
-                break;
+        if(students == null || students[0] == null ) {
+            System.out.println("                                         " +
+                    " *****NO DATA FOUND*****                             " +
+                    "             ");
+        } else {
+            for (Student s : students) {
+                System.out.println(String.format("%-5s%-32s%-12s%-5s%-42s%-12s",
+                        String.valueOf(s.getId()), s.getName(), s.getDept(),
+                        String.valueOf(s.getCgpa()), s.getEmail(), s.getMobile()));
             }
-            System.out.println(String.format("%-5s%-32s%-12s%-5s%-42s%-12s",
-                    String.valueOf(s.getId()), s.getName(), s.getDept(),
-                    String.valueOf(s.getCgpa()), s.getEmail(), s.getMobile()));
         }
         System.out.println("***************************************************" +
                 "THE END**************************************************");
@@ -108,12 +108,12 @@ public class StudentControllerImpl implements StudentController {
                         printData(this.studentService.searchById(id));
                         break;
                     case 2:
-                        System.out.print("Enter Student Name:");
+                        System.out.print("Enter Student Name : ");
                         String name = br.readLine().trim();
                         printData(this.studentService.searchByName(name));
                         break;
                     case 3:
-                        System.out.print("Enter Student Department:");
+                        System.out.print("Enter Student Department : ");
                         String dept = br.readLine().trim();
                         printData(this.studentService.searchByDept(dept));
                         break;
@@ -122,7 +122,7 @@ public class StudentControllerImpl implements StudentController {
                                 "MENU***");
                         return;
                     default:
-                        System.out.println("Wrong Choice! Enter Again!!");
+                        System.out.println("Wrong Choice! Enter Again!!\n");
                         break;
                 }
             } catch (Exception e) {
@@ -134,14 +134,48 @@ public class StudentControllerImpl implements StudentController {
     @Override
     public void updateStudent() {
         try {
-            String status = studentService.updateStudent(this.getStudentDetails());
+            int id;
+            String status = "";
+            System.out.println("***UPDATE STUDENT***");
+            System.out.print("Enter Student ID : ");
+            id = Integer.parseInt(br.readLine());
+            Student student = studentService.searchById(id);
+
+            if(student == null) {
+                status = "notexists";
+            } else {
+                System.out.print(String.format("%-50s : ",
+                        "Student Name [ " + student.getName() + " ]") );
+                String name = br.readLine().trim();
+                System.out.print(String.format("%-50s : ",
+                        "Student Dept [ " + student.getDept() + " ]"));
+                String dept = br.readLine().trim();
+                System.out.print(String.format("%-50s : ",
+                        "Student CGPA [ " + student.getCgpa() + " ]"));
+                float cgpa = Float.parseFloat(br.readLine().trim());
+                System.out.print(String.format("%-50s : ",
+                        "Student Email [ " + student.getEmail() + " ]"));
+                String email = br.readLine().trim();
+                System.out.print(String.format("%-50s : ",
+                        "Student Mobile [ " + student.getMobile() + " ]"));
+                String mobile = br.readLine().trim();
+
+                student.setName(name);
+                student.setDept(dept);
+                student.setCgpa(cgpa);
+                student.setEmail(email);
+                student.setMobile(mobile);
+
+                status = studentService.updateStudent(student);
+            }
+
 
             if (status.equals("success")) {
-                System.out.println("Student Updated Successfully...!");
+                System.out.println("Student Updated Successfully...!\n");
             } else if (status.equals("notexists")) {
-                System.out.println("Student not exists...!");
+                System.out.println("Student not exists...!\n");
             } else if (status.equals("failed")) {
-                System.out.println("Student update failed...!");
+                System.out.println("Student update failed...!\n");
             }
         } catch (Exception e) {
             System.out.println("***Exception in getting student details***");

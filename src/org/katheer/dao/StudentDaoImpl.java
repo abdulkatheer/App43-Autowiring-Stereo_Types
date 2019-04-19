@@ -78,30 +78,6 @@ public class StudentDaoImpl implements StudentDao {
         return status;
     }
 
-    @Override
-    public Student getById(int id) {
-        Student s = new Student();
-        try {
-            connection = dataSource.getConnection();
-            preparedStatement = connection.prepareStatement("SELECT * FROM " +
-                    "student WHERE id = ?");
-            preparedStatement.setInt(1, id);
-            ResultSet rs = preparedStatement.executeQuery();
-            int rowcount = this.getRecordCount(rs);
-
-            if (rowcount == 0) {
-                return s;
-            } else {
-                while (rs.next()) {
-                    s = this.getRecordData(rs);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return s;
-    }
-
     private Student getRecordData(ResultSet rs) {
         Student student = new Student();
         try {
@@ -131,6 +107,28 @@ public class StudentDaoImpl implements StudentDao {
     }
 
     @Override
+    public Student getById(int id) {
+        Student s = null;
+        try {
+            connection = dataSource.getConnection();
+            preparedStatement = connection.prepareStatement("SELECT * FROM " +
+                    "student WHERE id = ?");
+            preparedStatement.setInt(1, id);
+            ResultSet rs = preparedStatement.executeQuery();
+            int rowcount = this.getRecordCount(rs);
+
+            if (rowcount != 0) {
+                while (rs.next()) {
+                    s = this.getRecordData(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return s;
+    }
+
+    @Override
     public Student[] getByName(String name) {
         Student[] s = null;
         try {
@@ -141,14 +139,9 @@ public class StudentDaoImpl implements StudentDao {
             ResultSet rs = preparedStatement.executeQuery();
             int rowcount = this.getRecordCount(rs);
 
-            if (rowcount == 0) {
-                s = new Student[1];
-                s[0] = new Student();
-                return s;
-            } else {
+            if (rowcount != 0) {
                 s = new Student[rowcount];
                 int i = 0;
-                ;
                 while (rs.next()) {
                     s[i] = this.getRecordData(rs);
                     i++;
@@ -171,14 +164,9 @@ public class StudentDaoImpl implements StudentDao {
             ResultSet rs = preparedStatement.executeQuery();
             int rowcount = this.getRecordCount(rs);
 
-            if (rowcount == 0) {
-                s = new Student[1];
-                s[0] = new Student();
-                return s;
-            } else {
+            if (rowcount != 0) {
                 s = new Student[rowcount];
                 int i = 0;
-                ;
                 while (rs.next()) {
                     s[i] = this.getRecordData(rs);
                     i++;
@@ -193,34 +181,29 @@ public class StudentDaoImpl implements StudentDao {
     @Override
     public String update(Student student) {
         String status = "";
+        try {
+            preparedStatement = connection.prepareStatement("UPDATE " +
+                    "student SET name=?, dept=?, cgpa=?, email=?, " +
+                    "mobile=? WHERE id=?");
 
-        if (this.isExists(student)) {
-            try {
-                preparedStatement = connection.prepareStatement("UPDATE " +
-                        "student SET name=?, dept=?, cgpa=?, email=?, " +
-                        "mobile=? WHERE id=?");
+            preparedStatement.setString(1, student.getName());
+            preparedStatement.setString(2, student.getDept());
+            preparedStatement.setFloat(3, student.getCgpa());
+            preparedStatement.setString(4, student.getEmail());
+            preparedStatement.setString(5, student.getMobile());
+            preparedStatement.setInt(6, student.getId());
 
-                preparedStatement.setString(1, student.getName());
-                preparedStatement.setString(2, student.getDept());
-                preparedStatement.setFloat(3, student.getCgpa());
-                preparedStatement.setString(4, student.getEmail());
-                preparedStatement.setString(5, student.getMobile());
-                preparedStatement.setInt(6, student.getId());
+            int rowCount = preparedStatement.executeUpdate();
 
-                int rowCount = preparedStatement.executeUpdate();
-
-                if (rowCount == 1) {
-                    status = "success";
-                } else {
-                    status = "failed";
-                }
-            } catch (Exception e) {
-                System.out.println("***Exception while updating student***");
-                e.printStackTrace();
+            if (rowCount == 1) {
+                status = "success";
+            } else {
                 status = "failed";
             }
-        } else {
-            status = "notexists";
+        } catch (Exception e) {
+            System.out.println("***Exception while updating student***");
+            e.printStackTrace();
+            status = "failed";
         }
         return status;
     }
